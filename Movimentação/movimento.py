@@ -75,7 +75,7 @@ def Verifica():
             c['Pass'] = campo[5]
     arquivo.close
     if c['Email'] == "":
-        return "Não achamos sua conta :("
+        return "\tNão achamos sua conta :("
     return ""
 
 def VerSaldo():
@@ -130,10 +130,15 @@ def Sacar():
                 while True:
                     try:
                         nsaldo = float(input("\t Digite o valor: "))
+                        if nsaldo < 5:
+                            print("\tErro: Número Inválido!")
+                            time.sleep(2)
+                            continue
                         break
                     except:
                         print("\tErro: Número Inválido!")
                         time.sleep(2)
+                        continue
             global c
             for linha in arquivo:
                 campo = linha.split(',')
@@ -141,7 +146,7 @@ def Sacar():
                     if nsaldo > c['Saldo']:
                         print("\tErro: Valor do saque maior do que o saldo!!")
                         continue
-                    elif nsaldo < 25.0:
+                    elif nsaldo < 5.0:
                         print("\tErro: Valor do saque inválido!!")
                         continue
                     else:
@@ -151,6 +156,8 @@ def Sacar():
                     arq.write('{},{},{},{},{},{}'.format(campo[0],campo[1],campo[2],campo[3],campo[4],campo[5]))
                     arq.close
                     arquivo.close
+                    print("\tSaque realizado com sucesso!!")
+                    print("\tSaldo -> R$ ",c['Saldo'])
                 else:
                     arq = open("../db.txt","a")
                     arq.write('{},{},{},{},{},{}'.format(campo[0],campo[1],campo[2],campo[3],campo[4],campo[5]))
@@ -158,9 +165,77 @@ def Sacar():
                     arquivo.close
                 ver = Verifica()
                 if ver != "":
-                    print("Erro: Algo deu errado :(")
+                    print("\tErro: Algo deu errado :(")
         break
-        
+
+def Deposito():
+    limpaTela()
+    while True:
+        print("\a \v")
+        print("\t ____________________________________")
+        print("\t|                                    |")
+        print("\t|             DEPOSITO               |")
+        print("\t|                                    |")
+        print("\t|====================================|")
+        print("\t|                                    |")
+        print("\t|  1 - R$ 50,00    3 - R$ 100,00     |")
+        print("\t|                                    |")
+        print("\t|  2 - R$ 75,00    4 - Outro valor   |")
+        print("\t|                                    |")
+        print("\t|____________________________________|")
+        print("\t|____________________________________|")
+        try:
+            Esc = int(input('\t| [++]>> ')) 
+        except:
+            print("\tErro: Número Inválido!!")
+            continue
+        if Esc < 1 or Esc > 4:
+            print("\tErro: Número Inválido!!")
+            continue
+        else:
+            arquivo = open('../db.txt','r')
+            nsaldo = 0.0
+            if Esc == 1:
+                nsaldo = 50.00
+            elif Esc == 2:
+                nsaldo = 75.00                
+            elif Esc == 3:
+                nsaldo = 100.00
+            else:
+                while True:
+                    try:
+                        nsaldo = float(input("\t Digite o valor: "))
+                        if nsaldo < 5:
+                            continue
+                        break
+                    except:
+                        print("\tErro: Número Inválido!")
+                        time.sleep(2)
+            global c
+            for linha in arquivo:
+                campo = linha.split(',')
+                if campo[0] == c['Nconta']:
+                    if nsaldo < 5.0:
+                        print("\tErro: Valor do saque inválido!!")
+                        continue
+                    else:
+                        c['Saldo'] += nsaldo
+                        campo[2] = "%.2f" % c['Saldo']
+                    arq = open("../db.txt","w")
+                    arq.write('{},{},{},{},{},{}'.format(campo[0],campo[1],campo[2],campo[3],campo[4],campo[5]))
+                    arq.close
+                    arquivo.close
+                    print("\tDepósito realizado com sucesso!!")
+                    print("\tSaldo -> R$ ",c['Saldo'])
+                else:
+                    arq = open("../db.txt","a")
+                    arq.write('{},{},{},{},{},{}'.format(campo[0],campo[1],campo[2],campo[3],campo[4],campo[5]))
+                    arq.close
+                    arquivo.close
+                ver = Verifica()
+                if ver != "":
+                    print("\tErro: Algo deu errado :(")
+        break
 
 while True:
     limpaTela()
@@ -205,7 +280,9 @@ while True:
                     print()
                     Esc = input('\tTecle para continuar...')
                 elif esc == 3:
-                    print("Depósito")
+                    Deposito()
+                    print()
+                    Esc = input('\tTecle para continuar...')
                 else:
                     print("Pagamento")
                     time.sleep(2)
