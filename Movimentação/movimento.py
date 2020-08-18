@@ -1,6 +1,7 @@
 import os
 import platform
 import time
+from datetime import datetime
 
 #Função que limpa tela
 def limpaTela():
@@ -41,7 +42,7 @@ def Menu():
     print("\t|                                          |")
     print("\t|   3 - Depósito    4 - Pagamento          |")
     print("\t|                                          |")
-    print("\t|   5 - Sair                               |")
+    print("\t|   5 - Ver Pagamentos     0 - Sair        |")
     print("\t|                                          |")
     print("\t|__________________________________________|")
 
@@ -53,6 +54,13 @@ c = {
     "Telefone": "",
     "Pass": ""
 }
+l = {
+    "Nconta": "",
+    "Nome" : "",
+    "Preco": 0.0,
+    "Data": ""
+}
+
 
 def Verifica():
     global c
@@ -107,6 +115,7 @@ def Sacar():
         print("\t|                                    |")
         print("\t|  2 - R$ 75,00    4 - Outro valor   |")
         print("\t|                                    |")
+        print("\t|      Tecle 0 para retornar...      |")
         print("\t|____________________________________|")
         print("\t|____________________________________|")
         try:
@@ -114,7 +123,11 @@ def Sacar():
         except:
             print("\tErro: Número Inválido!!")
             continue
-        if Esc < 1 or Esc > 4:
+        if Esc == 0:
+            print("Returning...")
+            time.sleep(2)
+            break
+        if Esc < 0 or Esc > 4:
             print("\tErro: Número Inválido!!")
             continue
         else:
@@ -182,15 +195,22 @@ def Deposito():
         print("\t|                                    |")
         print("\t|  2 - R$ 75,00    4 - Outro valor   |")
         print("\t|                                    |")
+        print("\t|      Tecle 0 para retornar...      |")
         print("\t|____________________________________|")
         print("\t|____________________________________|")
         try:
             Esc = int(input('\t| [++]>> ')) 
         except:
             print("\tErro: Número Inválido!!")
+            time.sleep(2)
             continue
-        if Esc < 1 or Esc > 4:
+        if Esc == 0:
+            print("Returning...")
+            time.sleep(2)
+            break
+        if Esc < 0 or Esc > 4:
             print("\tErro: Número Inválido!!")
+            time.sleep(2)
             continue
         else:
             arquivo = open('../db.txt','r')
@@ -237,6 +257,91 @@ def Deposito():
                     print("\tErro: Algo deu errado :(")
         break
 
+def Pagamento():
+    while True:
+        limpaTela()
+        print("\a \v")
+        print("\t ____________________________________")
+        print("\t|                                    |")
+        print("\t|             PAGAMENTO              |")
+        print("\t|                                    |")
+        print("\t|====================================|")
+        print("\t|      Tecle 0 para retornar...      |")
+        print("\t|____________________________________|")
+        global l
+        global c
+        print()
+        l["Nome"] = input('\tDigite o nome da conta: ') 
+        if len(l["Nome"]) < 3 and l["Nome"] != "0":
+            print("\tErro: Número Inválido!!")
+            time.sleep(2)
+            continue
+        elif l["Nome"] == "0":
+            print("Returning...")
+            time.sleep(2)
+            break
+        else:
+            arquivo = open('../db.txt','r')
+            try:
+                l["Preco"] = float(input("\tDigite o valor a ser pago: R$ "))
+            except:
+                print("\tErro: Número Inválido!!")
+                time.sleep(2)
+                continue
+            now = datetime.now()
+            format = "%d/%m/%Y %H:%M:%S"
+            l["Data"] = now.strftime(format)
+            for linha in arquivo:
+                campo = linha.split(',')
+                if campo[0] == c['Nconta']:
+                    c['Saldo'] -= l["Preco"]
+                    campo[2] = "%.2f" % c['Saldo']
+                    arq = open("../db.txt","w")
+                    arq.write('{},{},{},{},{},{}'.format(campo[0],campo[1],campo[2],campo[3],campo[4],campo[5]))
+                    arq.close
+                    arquivo.close
+                    print("okay")
+                else:
+                    arq = open("../db.txt","a")
+                    arq.write('{},{},{},{},{},{}'.format(campo[0],campo[1],campo[2],campo[3],campo[4],campo[5]))
+                    arq.close
+                    arquivo.close
+            print("\tDepósito realizado com sucesso!!")
+            print("\tSaldo -> R$ ",c['Saldo'])
+                            
+            formpreco = "%.2f" % l['Preco']
+            arq = open("log.txt","a")
+            arq.write('{},{},{},{}\n'.format(l["Nconta"],l["Nome"],formpreco,l["Data"]))
+            arq.close
+            arquivo.close
+            print("\tPagamento realizado com sucesso!!")
+            print("\tSaldo -> R$ ",c['Saldo'])
+            
+            ver = Verifica()
+            if ver != "":
+                print("\tErro: Algo deu errado :(")
+
+        break
+
+def VerLogs():
+    global l
+    print("\a \v")
+    print("\t ________________________________")
+    print("\t|                                |")
+    print("\t|         VER PAGAMENTO          |")
+    print("\t|                                |")
+    print("\t|================================|")
+    arquivo = open("log.txt",'r')
+    for line in arquivo:
+        campo = line.split(",")
+        if campo[0] == l["Nconta"]:
+            print("\t| \a")
+            print("\t|  Nome ->", campo[1])
+            print("\t|  Valor -> R$", campo[2])
+            print("\t|  Data ->", campo[3])
+            print("\t| \a")
+    print("\t|________________________________")
+
 while True:
     limpaTela()
     Login()
@@ -248,6 +353,7 @@ while True:
         time.sleep(2)
         continue
     else:
+        l["Nconta"] = c["Nconta"]  
         # Menu Infinito
         while True:
             limpaTela()
@@ -260,12 +366,12 @@ while True:
                 time.sleep(2)
                 continue
             # Verifica se o número é válido
-            if esc < 1 or esc > 5:
+            if esc < 0 or esc > 5:
                 print("Erro: Número Inválido!")
                 time.sleep(2)
                 continue
             # Finaliza a sessão
-            elif esc == 5:
+            elif esc == 0:
                 print("Obrigado por utilizar o terminal :D")
                 print("Volte Sempre!!")
                 break
@@ -283,8 +389,12 @@ while True:
                     Deposito()
                     print()
                     Esc = input('\tTecle para continuar...')
+                elif esc == 4:
+                    Pagamento()
+                    print()
+                    Esc = input('\tTecle para continuar...')
                 else:
-                    print("Pagamento")
-                    time.sleep(2)
-                    
+                    VerLogs()
+                    print()
+                    Esc = input('\tTecle para continuar...')
     break
